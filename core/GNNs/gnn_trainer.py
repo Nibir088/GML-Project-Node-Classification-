@@ -105,7 +105,7 @@ class GNNTrainer():
         self.evaluator = lambda pred, labels: self._evaluator.eval(
             {"y_pred": pred.argmax(dim=-1, keepdim=True),
              "y_true": labels.view(-1, 1)}
-        )["acc"]
+        )#["acc"]
 
     def _forward(self, x, edge_index):
         logits = self.model(x, edge_index)  # small-graph
@@ -119,8 +119,10 @@ class GNNTrainer():
         logits = self._forward(self.features, self.data.edge_index)
         loss = self.loss_func(
             logits[self.data.train_mask], self.data.y[self.data.train_mask])
-        train_acc = self.evaluator(
+        train_metric = self.evaluator(
             logits[self.data.train_mask], self.data.y[self.data.train_mask])
+        
+        train_acc, train_pre, train_recall, train_f1, train_aoc = train_metric['acc'], train_metric['precision'], train_metric['recall'], train_metric['f1'], train_metric['auc']
         loss.backward()
         self.optimizer.step()
 
@@ -130,11 +132,11 @@ class GNNTrainer():
     def _evaluate(self):
         self.model.eval()
         logits = self._forward(self.features, self.data.edge_index)
-        val_acc = self.evaluator(
+        val_metric = self.evaluator(
             logits[self.data.val_mask], self.data.y[self.data.val_mask])
-        test_acc = self.evaluator(
+        test_metric = self.evaluator(
             logits[self.data.test_mask], self.data.y[self.data.test_mask])
-        return val_acc, test_acc, logits
+        return val_metric, test_metric, logits
 
     @time_logger
     def train(self):
@@ -142,7 +144,10 @@ class GNNTrainer():
         for epoch in range(self.epochs):
             t0, es_str = time(), ''
             loss, train_acc = self._train()
-            val_acc, test_acc, _ = self._evaluate()
+            val_metric, test_metric, _ = self._evaluate()
+            val_acc = val_metric['acc']
+            test_acc = test_metric['acc']
+            
             if self.stopper is not None:
                 es_flag, es_str = self.stopper.step(val_acc, self.model, epoch)
                 if es_flag:
@@ -162,8 +167,24 @@ class GNNTrainer():
     @ torch.no_grad()
     def eval_and_save(self):
         torch.save(self.model.state_dict(), self.ckpt)
-        val_acc, test_acc, logits = self._evaluate()
-        print(
-            f'[{self.gnn_model_name} + {self.feature_type}] ValAcc: {val_acc:.4f}, TestAcc: {test_acc:.4f}\n')
-        res = {'val_acc': val_acc, 'test_acc': test_acc}
+        val_metric, test_metric, logits = self._evaluate()
+        print(f'[{self.gnn_model_name} + {self.feature_type}] ValAcc: {val_metric["acc"]:.4f}, TestAcc: {test_metric["acc"]:.4f}\n')
+        print(f'ValPre: {val_metric["precision"]:.4f}, TestPre: {test_metric["precision"]:.4f}\n')
+        print(f'ValRecall: {val_metric["recall"]:.4f}, TestRecall: {test_metric["recall"]:.4f}\n')
+        print(f'ValF1: {val_metric["f1"]:.4f}, TestF1: {test_metric["f1"]:.4f}\n')
+        print(f'ValAUC: {val_metric["auc"]:.4f}, TestAUC: {test_metric["auc"]:.4f}\n')
+
+        # Update res dictionary
+        res = {
+            'val_acc': val_metric['acc'],
+            'test_acc': test_metric['acc'],
+            'val_precision': val_metric['precision'],
+            'test_precision': test_metric['precision'],
+            'val_recall': val_metric['recall'],
+            'test_recall': test_metric['recall'],
+            'val_f1': val_metric['f1'],
+            'test_f1': test_metric['f1'],
+            'val_auc': val_metric['auc'],
+            'test_auc': test_metric['auc']
+        }
         return logits, res

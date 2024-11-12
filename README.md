@@ -59,5 +59,4 @@ python -m core.trainEnsemble gnn.model.name RevGAT gnn.train.lr 0.002 gnn.train.
 ## 4. Reproducibility
 Use `run.sh` to run the codes and reproduce the published results.
 
-This repository also provides the checkpoints for all trained models `(*.ckpt)` and the TAPE features `(*.emb)` used in the project. Please donwload them [here](https://drive.google.com/drive/folders/1nF8NDGObIqU0kCkzVaisWooGEQlcNSIN?usp=sharing).
 

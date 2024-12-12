@@ -55,8 +55,12 @@ python -m core.trainEnsemble gnn.model.name SAGE
 python -m core.trainEnsemble gnn.model.name RevGAT gnn.train.lr 0.002 gnn.train.dropout 0.75
 ```
 
+### To use graohomer
+
+python -m core.trainEnsemble dataset ogbn-arxiv gnn.model.name Graphormer
+
 
 ## 4. Reproducibility
-Use `run.sh` to run the codes and reproduce the published results.
+Use `run_graphormer.sh` to run the codes and reproduce the published results.
 
 

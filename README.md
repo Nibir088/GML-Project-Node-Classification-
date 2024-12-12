@@ -49,16 +49,20 @@ WANDB_DISABLED=True TOKENIZERS_PARALLELISM=False CUDA_VISIBLE_DEVICES=0,1,2,3 py
 
 ### To use different GNN models
 ```
-python -m core.trainEnsemble gnn.model.name MLP
-python -m core.trainEnsemble gnn.model.name GCN
-python -m core.trainEnsemble gnn.model.name SAGE
-python -m core.trainEnsemble gnn.model.name RevGAT gnn.train.lr 0.002 gnn.train.dropout 0.75
+python -m core.trainGNN gnn.model.name MLP
+python -m core.trainGNN gnn.model.name GCN
+python -m core.trainGNN gnn.model.name SAGE
+python -m core.trainGNN gnn.model.name RevGAT gnn.train.lr 0.002 gnn.train.dropout 0.75
 ```
 
 ### To use graohomer
-
-python -m core.trainEnsemble dataset ogbn-arxiv gnn.model.name Graphormer
-
+```
+python -m core.trainEnsemble gnn.model.name Graphormer
+```
+### To use TAPE
+```
+python -m core.trainGNN gnn.model.name MLP
+```
 
 ## 4. Reproducibility
 Use `run_graphormer.sh` to run the codes and reproduce the published results.
